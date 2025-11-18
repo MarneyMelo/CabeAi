@@ -7,8 +7,8 @@ EXECUTABLE = bin/tp2.out
 
 # adicionar novos arquivos
 SOURCES = src/main.cpp \
-		  src/veiculo.cpp \
-		  src/gerenciadorViagens.cpp
+		  src/trecho.cpp \
+		  src/corrida.cpp
           
 
 # gera os nomes dos arquivos de objeto (.o) a partir da lista SOURCES
