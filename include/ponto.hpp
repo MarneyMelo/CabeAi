@@ -2,12 +2,12 @@
 #define PONTO_HPP
 
 struct Ponto {
-    float x;
-    float y;
+    double x;
+    double y;
 
     Ponto() : x(0.0), y(0.0) {}
 
-    Ponto(float x, float y) : x(x), y(y) {}
+    Ponto(double x, double y) : x(x), y(y) {}
 };
 
 #endif

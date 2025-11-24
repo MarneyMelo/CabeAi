@@ -30,32 +30,34 @@ Evento Escalonador::retirarProximoEvento() {
     return minEvento;
 }
 
-void Escalonador::refazerSubindo(int indice) {
+void Escalonador::refazerSubindo(int indice) { //HEAPIFY UP
     while (indice > 0) {
         int pai = (indice - 1) / 2;
-        // MinHeap:::::: O pai deve ser menor que o filho. Se não for, troca
-        if (heap[indice].getTempo() < heap[pai].getTempo()) {
+
+        // !!!!!!!! MINHEAPPP::::: O pai deve ser menor que o filho. Se não for, troca !!!!!!!!
+
+        if (heap[indice].getTempo() < heap[pai].getTempo()) { 
             Evento temp = heap[indice];
             heap[indice] = heap[pai];
             heap[pai] = temp;
-            indice = pai; // Continua verificando subindo a tree
+            indice = pai; // continua verificando subindo a tree
         } else {
             break; // esta na posicao certa
         }
     }
 }
 
-void Escalonador::refazerDescendo(int indice) {
+void Escalonador::refazerDescendo(int indice) { // HEAPIFY DOWN
     int menor = indice;
     int filhoEsq = 2 * indice + 1;
     int filhoDir = 2 * indice + 2;
 
-    // Verifica se o filho da esquerda é menor que o atual
+    // Verifica se o filho da esquerda < que o atual
     if (filhoEsq < tamanho && heap[filhoEsq].getTempo() < heap[menor].getTempo()) {
         menor = filhoEsq;
     }
     
-    // verifica se o filho da direita e ainda menor
+    // verifica se o filho da direita é ainda menor
     if (filhoDir < tamanho && heap[filhoDir].getTempo() < heap[menor].getTempo()) {
         menor = filhoDir;
     }

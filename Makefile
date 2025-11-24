@@ -10,7 +10,6 @@ SOURCES = src/main.cpp \
           src/escalonador.cpp \
           src/corrida.cpp \
           src/trecho.cpp \
-          src/veiculo.cpp
           
 
 # gera os nomes dos arquivos de objeto (.o) a partir da lista SOURCES

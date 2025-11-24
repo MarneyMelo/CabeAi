@@ -14,12 +14,10 @@ private:
     void refazerSubindo(int indice);
 
 public:
-    // metodos simples ficam no hpp
     Escalonador() : tamanho(0) {}
     bool temEventos() const {return tamanho > 0;}
     int getTamanho() const {return tamanho;}
 
-    // mais complexos vao para o cpp
     void inserirEvento(Evento e);
     Evento retirarProximoEvento();
 };

@@ -15,7 +15,7 @@ private:
     TipoEvento tipo;
 
 public:
-    Evento() : tempo(-1), 
+    Evento() : tempo(-1), // o construtor padrao insere valores invalidos
         idCorrida(-1),
          indiceParada(-1), 
          tipo(TipoEvento::INICIO_CORRIDA) {}
