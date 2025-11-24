@@ -5,7 +5,7 @@
 #include "trecho.hpp"
 #include "parada.hpp" 
 
-const int MAX_DEMANDAS_POR_CORRIDA = 10; // >= 'eta' = capacidade do veiculo
+const int MAX_DEMANDAS_POR_CORRIDA = 50; // >= 'eta' = capacidade do veiculo
 const int MAX_PARADAS_POR_CORRIDA = MAX_DEMANDAS_POR_CORRIDA * 2;
 const int MAX_TRECHOS_POR_CORRIDA = MAX_PARADAS_POR_CORRIDA - 1;
 
