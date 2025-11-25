@@ -1,5 +1,5 @@
 #include <iostream>
-#include <cmath> // para sqrt e pow na lógica de despacho
+#include <cmath> // Necessário para sqrt e pow (cálculo de distâncias).
 #include <iomanip>
 #include "../include/demanda.hpp"
 #include "../include/corrida.hpp"
@@ -8,22 +8,22 @@
 const int MAX_DEMANDAS_SISTEMA = 10000;
 
 int main() {
-    //=======================================================
-    //1 Leitura dos parametros idem figura 2 enunciado
-    //======================================================
-    int eta;        // Capacidade do veículo
-    double gama;     // Velocidade do veículo
-    double delta;    // Intervalo temporal máx. entre corridas combinadas
-    double alfa;     // Distância máx. entre origens
-    double beta;     // Distância máx. entre destinos
-    double lambda;   // Eficiência mínima da corrida combinada
-    int numDemandas; // Número total de demandas
+    // ---------------------------------------------------------
+    // 1. Leitura dos parâmetros de configuração do sistema
+    // ---------------------------------------------------------
+    int eta;         // Capacidade máxima de passageiros por veículo.
+    double gama;     // Velocidade média do veículo (km/h ou m/s).
+    double delta;    // Janela de tempo máxima permitida para agrupamento (ride-pooling).
+    double alfa;     // Desvio máximo permitido entre as origens das demandas.
+    double beta;     // Desvio máximo permitido entre os destinos das demandas.
+    double lambda;   // Eficiência mínima exigida para validar uma rota compartilhada.
+    int numDemandas; // Quantidade total de solicitações a processar.
 
     if (!(std::cin >> eta >> gama >> delta >> alfa >> beta >> lambda >> numDemandas)) {
-        return 0; // encerra se nao houver todos inputs
+        return 0; // Encerra a execução caso a entrada esteja incompleta.
     }
 
-    //caso de erro, basta alterar MAX_DEMANDAS_SISTEMA line:7
+    // Validação de segurança para evitar estouro de buffer nos arrays estáticos.
     if (numDemandas > MAX_DEMANDAS_SISTEMA) {
         std::cerr << "ERRO: Numero de demandas (" << numDemandas 
                   << ") excede o limite maximo suportado (" 
@@ -31,9 +31,9 @@ int main() {
         return 1;
     }
 
-    // ---------------------------------
-    // 2. Leitura das Demandas
-    // ------------------------------
+    // ---------------------------------------------------------
+    // 2. Carregamento das Demandas
+    // ---------------------------------------------------------
     
     static Demanda listaDemandas[MAX_DEMANDAS_SISTEMA];
 
@@ -50,59 +50,61 @@ int main() {
         listaDemandas[i] = Demanda(id, tempo, pOrigem, pDestino);
     }
 
-    // -------------------------------------
-    // 3- Lógica de despacho e inicializacao
-    // ---------------------------------------
+    // ---------------------------------------------------------
+    // 3. Lógica de Despacho (Heurística Gulosa)
+    // ---------------------------------------------------------
     
     static Corrida listaCorridas[MAX_DEMANDAS_SISTEMA];
     int totalCorridas = 0;
     
     Escalonador escalonador;
 
-    // vector auxiliar para testar combinacoes (tamanho igual a MAX_DEMANDAS_POR_CORRIDA em corrida.hpp)
+    // Buffer auxiliar para simular a construção de rotas antes de confirmá-las.
     static Demanda buffer[50]; 
 
     for (int i = 0; i < numDemandas; i++) {
-        // se a demanda ja foi alocada em outra corrida, pula (ja incrementa o i)
+        // Se a demanda já foi atendida (alocada em uma rota anterior), passa para a próxima.
         if (listaDemandas[i].getEstado() != EstadoCorrida::DEMANDADA) {
             continue;
         }
 
-        // nova corrida
+        // Início de uma nova rota candidata.
         int qtdAtual = 0;
         
-        // Adiciona a demanda inicial (c0)
+        // Adiciona a demanda atual como pivô da nova corrida.
         buffer[qtdAtual] = listaDemandas[i];
         qtdAtual++;
         
-        // marca temporariamente enquanto nao é acoplada a outra
+        // Marcação temporária de estado.
         listaDemandas[i].setEstado(EstadoCorrida::INDIVIDUAL);
 
-        // Tenta combinar com as outras demandas
+        // Tenta agrupar demandas subsequentes na mesma rota.
         for (int j = i + 1; j < numDemandas; j++) {
             
-            // criterio de tempo (Delta)
+            // 1. Restrição Temporal (Delta): Demandas muito distantes no tempo não são compatíveis.
+            // Como a lista está ordenada cronologicamente, podemos interromper o loop.
             if (listaDemandas[j].getTempo() - listaDemandas[i].getTempo() >= delta) {
-                break; // como estao ordenadas cronologicamente, as prox vao falhar
+                break; 
             }
 
-            // Se já foi atendida, ignora (pula incrementando j)
+            // Ignora demandas que já foram alocadas.
             if (listaDemandas[j].getEstado() != EstadoCorrida::DEMANDADA) {
                 continue;
             }
 
-            // criterio de Capacidade (Eta)
+            // 2. Restrição de Capacidade (Eta).
             if (qtdAtual >= eta) {
                 break;
             }
 
-            // criterios de dist (Alfa e Beta)
+            // 3. Restrições Espaciais (Alfa e Beta):
+            // Verifica a viabilidade geométrica em relação a todas as demandas já inseridas no buffer.
             bool distanciasOk = true;
             for (int k = 0; k < qtdAtual; k++) {
-                // dist entre origens
+                // Distância entre origens
                 double dOrig = std::sqrt(std::pow(listaDemandas[j].getOrigem().x - buffer[k].getOrigem().x, 2) +
                                         std::pow(listaDemandas[j].getOrigem().y - buffer[k].getOrigem().y, 2));
-                // dist entre destinos
+                // Distância entre destinos
                 double dDest = std::sqrt(std::pow(listaDemandas[j].getDestino().x - buffer[k].getDestino().x, 2) +
                                         std::pow(listaDemandas[j].getDestino().y - buffer[k].getDestino().y, 2));
                 
@@ -113,44 +115,41 @@ int main() {
             }
 
             if (!distanciasOk) {
-                break; // nterromper avaliacao se distancia invalida 
+                break; // Interrompe a avaliação se as restrições espaciais forem violadas.
             }
-                // adiciona para testar eficiencia (Lambda)
-                buffer[qtdAtual] = listaDemandas[j];
-                qtdAtual++;
-
-                Corrida teste;
-                teste.construirRota(buffer, qtdAtual, gama);
-
-                if (teste.getEficiencia() >= lambda) {
-                    // aceita a combinacao
-                    listaDemandas[j].setEstado(EstadoCorrida::COMBINADA);
-                    if (qtdAtual > 1) listaDemandas[i].setEstado(EstadoCorrida::COMBINADA);
-                } else {
-                    qtdAtual--;
-                    break; // Interromper avaliacaoo se eficiencia insuficiente
-                }
             
+            // Adiciona temporariamente para teste de eficiência.
+            buffer[qtdAtual] = listaDemandas[j];
+            qtdAtual++;
+
+            Corrida teste;
+            teste.construirRota(buffer, qtdAtual, gama);
+
+            // 4. Restrição de Eficiência (Lambda).
+            if (teste.getEficiencia() >= lambda) {
+                // A combinação é válida: confirma o estado das demandas.
+                listaDemandas[j].setEstado(EstadoCorrida::COMBINADA);
+                if (qtdAtual > 1) listaDemandas[i].setEstado(EstadoCorrida::COMBINADA);
+            } else {
+                // Reverte a inserção se a eficiência for insuficiente.
+                qtdAtual--;
+                break; 
+            }
         }
 
-        // cria a corrida definitiva e salva na lista (vai para o output)
+        // Consolida a corrida definitiva e armazena na lista oficial.
         listaCorridas[totalCorridas].construirRota(buffer, qtdAtual, gama);
 
-        // agendar o PRIMEIRO evento desta corrida no escalonador
-        // o tempo inicial é o tempo da solicitação da primeira demanda (c0)
+        // Agendamento inicial: Insere o evento de chegada na primeira parada (origem da primeira demanda).
         double tempoInicio = listaDemandas[i].getTempo();
-        
-        // evento: chegada na Parada 0 (PRIMEIRO EMBARQUE)
-        // idCorrida = totalCorridas e indiceParada = 0
         escalonador.inserirEvento(Evento(tempoInicio, totalCorridas, 0, TipoEvento::CHEGADA_PARADA));
 
         totalCorridas++;
-        
     }
 
-    // -----------------------------------
-    // 4. Loop Principal da Simulação
-    // ----------------------------------
+    // ---------------------------------------------------------
+    // 4. Loop Principal de Simulação (Processamento de Eventos)
+    // ---------------------------------------------------------
     
     std::cout << std::fixed << std::setprecision(2);
 
@@ -160,50 +159,49 @@ int main() {
         int idC = e.getIdCorrida();
         int idxP = e.getIndiceParada();
         
-        // Ref para a corrida atual
+        // Referência para a corrida associada ao evento.
         Corrida& c = listaCorridas[idC];
         int totalParadas = c.getNumParadas();
 
-        // Verifica se é a última parada da corrida
+        // Verifica se o evento corresponde à última parada da rota.
         if (idxP >= totalParadas - 1) {
-            // ---!!!! FIM DA CORRIDA:::: Gerar output !!!!---
-            // Formato: <TempoConclusao> <Distancia> <NumParadas> <Coords...>
+            // --- Finalização da Corrida ---
+            // Formato de saída: <TempoConclusão> <DistânciaTotal> <NumParadas> <Coordenadas...>
             std::cout << e.getTempo() << " "
                       << c.getDistanciaTotal() << " "
                       << c.getNumParadas();
 
-            // imprime as coordenadas
-
-            // NOTE!!: A estrutura de 'Trechos' armazena (P1->P2)
-            // para imprimir todas as paradas (P1, P2, P3...), imprimimos P1 do primeiro trecho
-            // e depois P2 de todos os trechos.
+            // Impressão da sequência de coordenadas visitadas.
+            // A estrutura 'Trecho' conecta P1 -> P2.
+            // Para reconstruir o caminho completo, imprimimos a origem do primeiro trecho
+            // e, subsequentemente, o destino de todos os trechos.
             
             const Trecho* trechos = c.getTrechos();
             
-            // primeira coordenada (origem do primeiro trecho)
+            // Imprime a coordenada inicial (Origem do primeiro trecho).
             if (totalParadas > 0) {
-                Ponto p = trechos[0].getParada1().getCoordenadas(); // IMPRIME ORIGEM (PARADA 1) DE TRECHO 0
+                Ponto p = trechos[0].getParada1().getCoordenadas(); 
                 std::cout << " " << p.x << " " << p.y;
             }
 
-            // Demais coordenadas (destinos dos trechos)
-            // Se tem N paradas, tem N-1 trechos
+            // Itera sobre os trechos imprimindo os destinos (Destino de cada trecho).
             for (int k = 0; k < totalParadas - 1; k++) {
-                Ponto p = trechos[k].getParada2().getCoordenadas();  //K=0 IMPRIME O DESTINO DE TRECHO 0
-                                                                     // K= 1 IMPRIME O DESTINO DE TECHO 1
+                Ponto p = trechos[k].getParada2().getCoordenadas();
                 std::cout << " " << p.x << " " << p.y;
             }
+
+            // O ultimo if e for, sao usados para que a saída seja coerente: A->B->C->D
             
             std::cout << std::endl;
 
         } else {
-            // MEIO DA CORRIDA (deslocamento): agendar prox parada ((SALTO NO TEMPO))
+            // --- Evento Intermediário ---
+            // O veículo chegou a uma parada, mas a rota continua.
+            // Calcula o tempo de deslocamento até a próxima parada e agenda o evento futuro.
             
-            // pega o tempo gasto no trecho atual (da parada idxP até idxP+1)
             double tempoTrecho = c.getTrechos()[idxP].getTempoGasto();
             double novoTempo = e.getTempo() + tempoTrecho;
 
-            // insere o próximo evento
             escalonador.inserirEvento(Evento(novoTempo, idC, idxP + 1, TipoEvento::CHEGADA_PARADA));
         }
     }

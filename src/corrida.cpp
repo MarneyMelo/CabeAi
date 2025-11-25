@@ -12,7 +12,7 @@ void Corrida::construirRota(Demanda demandas[], int num, double velocidadeVeicul
     this->numDemandas = num;
     this->numTrechos = 0;
 
-    //ordem FIFO:::: embarque 0, 1...N ---> desembarque 0, 1...N 
+    //ordem FIFO:: embarque 0, 1...N ---> desembarque 0, 1...N 
     Parada paradasDaRota[MAX_PARADAS_POR_CORRIDA];
     for (int i = 0; i < num; i++) {
         this->idsDemandas[i] = demandas[i].getId();
