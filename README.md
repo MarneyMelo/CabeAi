@@ -1,5 +1,10 @@
 # CabeAí Sistema de Despacho de Transporte por Aplicativo
 
+### Documentação Completa
+A documentação técnica detalhada (10 páginas), incluindo
+análise formal, metodologia experimental e resultados,
+está disponível em: `DOC/Documentacao-Cabeai.pdf`
+
 ## Sobre o Projeto
 
 Este repositório contém a minha implementação para um trabalho prático da disciplina de Estruturas de Dados. O desafio era criar, do zero e em C++, um sistema de *Sistema de Transporte por Aplicativo*.
@@ -59,6 +64,11 @@ O programa lê os dados via arquivos ou entrada padrão caso seja feita modifica
 ```bash
 ./bin/tp2.out caminho/para/seu_arquivo_de_teste.txt (por exemplo testes/inputs_1.txt que ja está na raiz do projeto)
 ```
+
+### Documentação Completa
+A documentação técnica detalhada (10 páginas), incluindo
+análise formal, metodologia experimental e resultados,
+está disponível em: `DOC/Documentacao-Cabeai.pdf`
 
 ## Autor
 
